@@ -466,11 +466,11 @@
 
 La eficiencia que demostraron los sistemas embebidos en la solución de problemas específicos produjeron un incremento significativo en su demanda. 
 
-En este trabajo se aborda el análisis y la implementación de dos SoC de código abierto, ambos con núcleo OpenRISC 1200, sobre una placa de desarrollo con soporte para dos sistemas operativos ecOS y Linux, con la finalidad de obtener un sistema integral de código abierto en donde se tiene código HDL, assembler y C disponible para realizar sistemas embebidos optimizados con una función especifica.
+En este trabajo se aborda el análisis y la implementación de dos SoC de código abierto, ambos con núcleo OpenRISC 1200, sobre una placa de desarrollo con soporte para dos sistemas operativos ecOS y Linux, con la finalidad de obtener un sistema integral de código abierto en donde se tiene código HDL, assembler y C disponible para realizar sistemas optimizados para una función especifica.
 
- Mediante el empleo del modelo de desarrollo en espiral se plantearon una serie de prototipos que incluyeron mayor funcionalidad en cada iteración del modelo. Dando lugar en cada prototipo a la prueba del funcionamientos de los distintos modulos de cada SoC implementado sobre la FPGA.
+ Mediante el empleo del modelo de desarrollo en espiral se plantearon una serie de prototipos que incluyeron mayor funcionalidad en cada iteración. Dando lugar en cada prototipo a la prueba del funcionamientos de los distintos modulos de cada SoC implementado sobre la FPGA.
 
-Este proceso tuvo como resultado la instanciación de dos SoC de código abierto sobre la placa de desarrollo de Xilinx S3ADSP1800A, utilizando aproximadamente el 50\% de los recursos en la FPGA para ambos SoC. Para la evaluación del OpenRISC 1200 se ejecutaron los benchmarks de sistemas embebidos Coremark y Dhrystone los resultados fueren para el primero 1.52/MHz y para el segundo 10.53 DMIP. Se observó que para distintos niveles de optimización del compilador cruzado or32-elf-gcc una mejora temporal y espacial en el código generado.
+Este proceso tuvo como resultado la instanciación de dos SoC de código abierto sobre la placa de desarrollo de Xilinx S3ADSP1800A, utilizando aproximadamente el 50\% de los recursos en la FPGA para ambos SoC. Para la evaluación del OpenRISC 1200 se ejecutaron los benchmarks de sistemas embebidos Coremark y Dhrystone los resultados fueren para el primero 1.52/MHz y para el segundo 10.53 DMIP. Se observó que para distintos niveles de optimización del compilador cruzado or32-elf-gcc tuvo una mejora temporal y espacial en el código generado.
 
 Los resultados de las benchmark permitieron posicionar al OpenRISC respecto de otros procesadores comerciales. El sistema operativo ecOS se monto con éxito en el SoC mostrando el correcto funcionamiento de manejo de hilos, se compiló exitosamente el kernel de Linux pudiendo comprobarse su correcta implemetación sobre una arquitectura OpenRISC 1200.
  
@@ -557,39 +557,48 @@ Los resultados de las benchmark permitieron posicionar al OpenRISC respecto de o
 %-------------------------------------------------------------------------------------------------
 \section{Introduction} \label{sec:intro}
 
-Los sistemas embebidos son aquellos sistemas de hardware y software optimizados para
-implementar una función específica. Los criterios de optimización
-suelen enfocarse en reducir el costo, el consumo y el tamaño. Los
-problemas que pueden resolverse mediante tales sistemas van desde un
-simple control de temperatura para un acondicionador de aire hasta el
-sistema de control y el procesamiento de señales en un satélite de
-telecomunicaciones. La gran eficiencia que han demostrado los sistemas
-embebidos en la solución de problemas específicos ha producido un
-incremento significativo en su demanda. En particular, actualmente se
-quiere expandir la capacidad de los mismos para atacar problemas de
-mayor complejidad y reducir los tiempos de desarrollo ofreciendo una
-más rápida puesta en funcionamiento. Esto último en particular es de
-gran importancia a nivel competitivo ya que la rápida evolución de la
-tecnología hace que un tiempo de desarrollo prolongado tenga como
-consecuencia un producto basado en una tecnología parcialmente
-obsoleta.
 
-%-------------------------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------------------------
-\section{Background} \label{sec:background}
+Los sistemas embebidos tienen un importante rol en la optimización de soluciones para problemas específicos que van desde un control de temperatura para un acondicionador de aire hasta el sistema de control y el procesamiento de señales en un satélite de
+telecomunicaciones. Los criterios de optimización suelen enfocarse en reducir el costo, el consumo y el tamaño de los sistemas.
 
-As mentioned before, a high NCG at very low BER (e.g.  $10^{-15}$)
-with OH as low as possible will be required in future high speed
-communication systems. Although it is well known that LDPC and TP
-codes provide a performance very close to the Shannon limit, their
-practical application to multigigabit systems has been precluded so
-far as a result of the error floor problem and the high implementation
-complexity. To mitigate these drawbacks, SCC-based FEC techniques have
-been adopted in several high-speed applications such as 100 Gb/s
-OTN~\cite{OSKY2010,KS2010,4528592}. This section reviews basic
-concepts related to the error floor problem, and describes the SCC
-schemes adopted in ultra high-speed devices.
+El presente trabajo muestra una solución descripta en hardware código abierto, sobre una arquitectura OpenRISC 1200 utilizando FPGA, con soporte para los sistemas operativos Linux y ecOs; Tal sistema de código abierto se caracteriza por ser tecnológicamente independiente implementándose tanto a nivel de FPGAs de bajo costo como a nivel de Circuitos Integrados para Aplicaciones Específicas(ASIC).
+
+\begin {description} 
+\item[A] Objetivo General: El presente proyecto tiene como objetivo la implementación de un sistema embebido basado en hardware\footnote{Entendiéndose por hardware de código abierto al código Register Transfer Level (RTL)} y software de código abierto.
+Dicho hardware será un System on Chip (SoC) montado sobre una placa de desarrollo que deberá además soportar un sistema operativo
+libre con la finalidad de proveer un sistema integral FPGA-SoC-Sistema
+Operativo completamente funcional de código abierto para aplicaciones de pequeña envergadura.
+
+\item[B] Objetivos específicos
+
+ \begin{itemize}
+ \item Analizar los microprocesadores softcore disponibles y seleccionar el microprocesador que se adapta mejor a nuestros requerimientos.
+
+\item Seleccionar los SoCs de acuerdo al microprocesador softcore elegido y determinar la placa de desarrollo para su implementación.
+
+\item Implementar el flujo de diseño de hardware para cada SoC seleccionado y realizar las correcciones necesarias sobre el código RTL para su correcta implementación. 
+\item Desarrollar  aplicaciones en lenguaje C generadas mediante compilación cruzada para las pruebas del funcionamiento del microprocesador, los SoCs, sus modulos y las herramientas de entorno de software para la arquitectura seleccionada.
+\item Estudiar y aplicar los mecanismos para la medición del rendimiento de sistemas embebidos. 
+\item Estudiar los Sistemas Operativos existentes soportados por las plataformas elegidas.
+\item Presentar los Sistemas Operativos Linux y ecOS que poseen las prestaciones funcionales adecuadas para su utilización en Sistemas Embebidos.
+\item Poner en funcionamiento y configurar los sistemas operativos Linux y ecOS para los SoCs elegidos.
+ \end{itemize}
+
+\end {description}
+
+
+%1-establecer la importancia de su campo proporcionan hechos fondo / información (posiblemente desde la investigación) definir la terminología en el título / palabras claves presentan el área del problema / enfoque de la investigación actual
+%
+%2-investigación y las contribuciones anteriores y / o actuales 
+%
+%3-encontrar una brecha en la investigación a describir el problema que se dirigirá a la actualidad una predicción a ensayar 
+%
+%4-describir el presente trabajo
+%-------------------------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------------------------
+\section{METODO y MATERIALES} \label{sec:background}
+
 
 %-------------------------------------------------------------------------------------------------
 \subsection{Error Floor on LDPC and Turbo Codes} \label{sec:errorfloor_model}
@@ -773,7 +782,7 @@ increases significantly its implementation complexity.
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
-\section{A New Code Concatenation Scheme} \label{sec:proposed_scheme}
+\section{DESARROLLO} \label{sec:proposed_scheme}
 
 \begin{figure}[t]
   \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_1_encoder.eps}}%
@@ -986,7 +995,7 @@ total overhead of $16.568\%$ (vs. $20.5\%$).
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
-\section{Improvements of the New SCC Scheme} \label{sec:improvements}
+\section{MEDICIONES} \label{sec:improvements}
 
 We introduce two improvements of the new SCC suitable for many
 practical applications based on LDPC codes and TCs. The first one is
@@ -1111,7 +1120,7 @@ original SCC.
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
-\section{Conclusions} \label{sec:concl} 
+\section{CONCLUSIÓN} \label{sec:concl} 
 
 We have introduced a novel SCC scheme to combat the error floor
 problem experienced in iterated sparse graph-based error correcting
