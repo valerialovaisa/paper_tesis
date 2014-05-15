@@ -79,6 +79,11 @@
 \usepackage{multirow}
 \usepackage{balance}
 \usepackage{color}
+\usepackage{hyperref}
+\usepackage{spverbatim}
+\usepackage{longtable}
+\usepackage[table]{xcolor}
+
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -555,37 +560,43 @@ Los resultados de las benchmark permitieron posicionar al OpenRISC respecto de o
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
-\section{Introduction} \label{sec:intro}
-
-
+\section{Introducción} \label{sec:intro}
 Los sistemas embebidos tienen un importante rol en la optimización de soluciones para problemas específicos que van desde un control de temperatura para un acondicionador de aire hasta el sistema de control y el procesamiento de señales en un satélite de
 telecomunicaciones. Los criterios de optimización suelen enfocarse en reducir el costo, el consumo y el tamaño de los sistemas.
 
-El presente trabajo muestra una solución descripta en hardware código abierto, sobre una arquitectura OpenRISC 1200 utilizando FPGA, con soporte para los sistemas operativos Linux y ecOs; Tal sistema de código abierto se caracteriza por ser tecnológicamente independiente implementándose tanto a nivel de FPGAs de bajo costo como a nivel de Circuitos Integrados para Aplicaciones Específicas(ASIC).
+El presente trabajo muestra una solución descripta en hardware código abierto, sobre una arquitectura OpenRISC 1200 utilizando FPGA, con soporte para los sistemas operativos Linux y ecOs; Tal sistema de código abierto se caracteriza por ser tecnológicamente independiente implementándose tanto a nivel de FPGAs de bajo costo como a nivel de Circuitos Integrados para Aplicaciones Específicas(ASIC). Además con un diseño de código abierto existe la opción de personalizar la descripción RTL
+para implementar la optimización o la funcionalidad deseada.
 
-\begin {description} 
-\item[A] Objetivo General: El presente proyecto tiene como objetivo la implementación de un sistema embebido basado en hardware\footnote{Entendiéndose por hardware de código abierto al código Register Transfer Level (RTL)} y software de código abierto.
-Dicho hardware será un System on Chip (SoC) montado sobre una placa de desarrollo que deberá además soportar un sistema operativo
+
+\subsection{Objetivo General}% \label{sec:errorfloor_model}
+
+Implementar un sistema embebido basado en hardware\footnote{Entendiéndose por hardware de código abierto al código Register Transfer Level (RTL)} y software de código abierto.
+Dicho hardware será un Sistemas programables en Chip (SoC) montado sobre una placa de desarrollo que deberá además soportar un sistema operativo
 libre con la finalidad de proveer un sistema integral FPGA-SoC-Sistema
 Operativo completamente funcional de código abierto para aplicaciones de pequeña envergadura.
 
-\item[B] Objetivos específicos
 
+\subsection{Objetivos específicos}% \label{sec:errorfloor_model}
  \begin{itemize}
  \item Analizar los microprocesadores softcore disponibles y seleccionar el microprocesador que se adapta mejor a nuestros requerimientos.
 
 \item Seleccionar los SoCs de acuerdo al microprocesador softcore elegido y determinar la placa de desarrollo para su implementación.
 
-\item Implementar el flujo de diseño de hardware para cada SoC seleccionado y realizar las correcciones necesarias sobre el código RTL para su correcta implementación. 
-\item Desarrollar  aplicaciones en lenguaje C generadas mediante compilación cruzada para las pruebas del funcionamiento del microprocesador, los SoCs, sus modulos y las herramientas de entorno de software para la arquitectura seleccionada.
 \item Estudiar y aplicar los mecanismos para la medición del rendimiento de sistemas embebidos. 
+
 \item Estudiar los Sistemas Operativos existentes soportados por las plataformas elegidas.
-\item Presentar los Sistemas Operativos Linux y ecOS que poseen las prestaciones funcionales adecuadas para su utilización en Sistemas Embebidos.
+
+\item Implementar el flujo de diseño de hardware para cada SoC seleccionado y realizar las correcciones necesarias sobre el código RTL para su correcta implementación. 
+
 \item Poner en funcionamiento y configurar los sistemas operativos Linux y ecOS para los SoCs elegidos.
+
+\item Verificar y validar cada prototipo implementado para la detección de deficiencias del microprocesador, los SoCs, sus módulos y las herramientas de entorno de software para la arquitectura seleccionada.
+
+%\item Desarrollar  aplicaciones en lenguaje C generadas mediante compilación cruzada para las pruebas del funcionamiento del microprocesador, los SoCs, sus modulos y las herramientas de entorno de software para la arquitectura seleccionada.
+
+%\item Presentar los Sistemas Operativos Linux y eCos que poseen las prestaciones funcionales adecuadas para su utilización en Sistemas Embebidos.
+
  \end{itemize}
-
-\end {description}
-
 
 %1-establecer la importancia de su campo proporcionan hechos fondo / información (posiblemente desde la investigación) definir la terminología en el título / palabras claves presentan el área del problema / enfoque de la investigación actual
 %
@@ -594,402 +605,320 @@ Operativo completamente funcional de código abierto para aplicaciones de peque�
 %3-encontrar una brecha en la investigación a describir el problema que se dirigirá a la actualidad una predicción a ensayar 
 %
 %4-describir el presente trabajo
-%-------------------------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------------------------
-\section{METODO y MATERIALES} \label{sec:background}
+
+\section{Marco Teórico} %\label{sec:background}
+
+\subsection{Field Programmable Gate Arrays (FPGAs)}% \label{sec:errorfloor_model}
+Son circuitos integrados formados por bloques lógicos 
+programables e interconectables entre sí. Permiten 
+implementar sistemas de alta complejidad y flexibilidad, 
+pudiendo combinarse con periféricos y microprocesadores; 
+para formar los llamados «Sistemas programables en chip».
 
 
-%-------------------------------------------------------------------------------------------------
-\subsection{Error Floor on LDPC and Turbo Codes} \label{sec:errorfloor_model}
+\subsection{Intellectual Property Core (IP Core) }% \label{sec:errorfloor_model}
 
-Error floors are usually caused by low-weight error patterns such as
-\emph{low-weight codewords} or \emph{near
-  codewords}~\cite{RL2009,R2003}. Low-weight codewords are the main
-cause of error floor in parallel concatenated TC. This error floor
-cannot be corrected nor detected. On the other hand, error floor in
-LDPC codes are caused by low-weight near codewords~\cite{R2003}. In
-this case, the LDPC decoder is able the \emph{detect} the errors. As
-we shall show in Section~\ref{sec:proposed_scheme}, this fact will be
-used to derive the new reduced complexity SCC scheme.
+El diseño de circuitos digitales se divide en bloques
+funcionales que se denominan \textit{módulos} o \textit{cores}. Un
+\textit{core} puede influir un conjunto de sub-bloques que ayudan a
+poner en práctica su funcionalidad. Los \textit{cores} pueden variar
+en tamaño partiendo de la implementación de una simple operación
+aritmética hasta la implementación de un microprocesador completo. El
+mismo \textit{core} puede ocupar una FPGA entera conformando el
+producto final completo o puede ser simplemente un bloque entre otros
+en una FPGA más grande o en un ASIC. Los \textit{cores} generalmente se describen utilizando un Lenguaje de Descripción de Hardware (HDL)
+en un nivel de abstracción conocida como Register Transfer Level
+(RTL).
 
-Let $\Omega$ be the set of all error-patterns that causes an error
-floor. An \emph{error-pattern} is defined as the set of all bits in
-error that jointly take place in one received codeword. Let
-$p(\omega)$ be the probability of a certain error pattern $\omega \in
-\Omega$ at a given signal-to-noise ratio (SNR). The \textit{exact word
-  error rate} (WER) due to $\Omega$ is defined by
-\begin{equation}\label{equ:ber1}
-  P_w(\Omega) = \sum_{\omega\in\Omega} p(\omega),
-\end{equation}
-while the BER is given by
-\begin{equation}\label{equ:ber2}
-  P_b(\Omega) = \frac{1}{n}\sum_{\omega\in\Omega} p(\omega)w(\omega),
-\end{equation}
-where $n$ is the codeword length and $w(\omega)$ is the weight of the
-error pattern $\omega$. From \eqref{equ:ber1} and \eqref{equ:ber2}, it
-is simple to derive the following upper bound
-\begin{equation}\label{equ:ber3}
-  P_b(\Omega) \lessapprox\frac{w_{max}}{n} P_w(\Omega),
-\end{equation}
-where $w_{max}= \max_{\omega \in \Omega} \left
-\{w(\omega)\right\}$. Parameters $w_{max}$ and $P_w(\Omega)$ are used
-here for designing different code concatenation
-schemes\footnote{Although the outer code also affects the error
-  patterns that do not cause error floor (i.e., $\omega\notin\Omega$),
-  we have verified from computer simulations (not included here) that
-  their effect on the performance can be neglected.}.
+A los cores pueden diseñarlos una persona o una entidad. Los
+desarrolladores de \textit{cores} y licenciatarios varían desde
+particulares a empresas. El producto, en este caso se conoce como un
+\textit{IP core (Intellectual Property Core)} siendo el diseño la
+propiedad intelectual de los desarrolladores.
 
+Pueden clasificarse de la siguiente manera:
+ \begin{itemize}
+\item{Softcores} Son los más flexibles y se presentan para \textit{IP}
+  en forma netlist (lista de compuertas e interconexiones) o en forma
+  de sintetizable RTL, lo que los hace tecnológicamente
+  independientes. Los \textit{cores} sintetizables se entregan en un
+  lenguaje de descripción de hardware como Verilog o VHDL. Para utilizarse en diferentes aplicaciones, pero poseen una menor
+  predictibilidad en la implementación y suelen tener un mayor costo y
+  menor desempeño de procesamiento.
 
-%-------------------------------------------------------------------------------------------------
-\subsection{Serial Code Concatenation (SCC)} \label{sec:serial_schemes}
+\item{Firmcores} Estos cores están optimizados para
+  implementarse en una FPGA, arquitectura o dispositivo en
+  particular. Esta optimización puede realizarla el fabricante
+  o un tercero. Utilizar este tipo de IP-Cores requiere disponer
+  de cierto nivel de conocimiento de la arquitectura, ya que es
+  posible rutear señales físicas y especificar la colocación de los
+  elementos de diseño. Un ejemplo de estos cores es el procesador
+  MicroBlaze de Xilinx~\cite{Etiqueta04}
 
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_scheme_1.eps}}%
-  \caption{Encoding of SCC-I.}
-    \label{fig:scheme1}
-\end{figure}
-
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_scheme_3.eps}}%
-  \caption{Encoding of SCC-I with interleaving.}
-    \label{fig:scheme3}
-\end{figure}
-
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_scheme_2.eps}}%
-    \caption{Encoding of SCC-II.}
-    \label{fig:scheme2}
-\end{figure}
-
-Code concatenation is a known FEC technique based on the combination
-of an inner code and an outer
-code~\cite{669119,RL2009,forney1966,HP2003}. Let $\C_1$ and $\C_2$
-denote the inner and outer code, respectively. Each code is defined by
-the set of parameters $[n_j,k_j,d_j]$, where $n_j$, $k_j$, and $d_j$
-are the block size, the dimension, and the minimum distance of the
-code $\C_j$ respectively. The overhead of the code is defined as
-$\Theta_j=(n_j-k_j)/k_j$. Let $C_j^i$ denote the \mbox{$i$-th}
-codeword of $\C_j$. A codeword $C_j^i$ is composed by the information
-data block $D_j^i$ of length $k_j$, and the parity block $P_j^i$ of
-length $r_j=n_j-k_j$. Next we describe the SCC schemes used in
-high-speed communication systems. In these applications, the inner
-code $\C_1$ is an LDPC or TP code, while the outer code $\C_2$ is a
-block code with error correction capability $t_2=\lfloor
-\frac{d_2-1}{2} \rfloor$ designed to eliminate or reduce the error
-floor of $\C_1$.
-
-\subsection*{SCC Scheme I (SCC-I)} \label{sec:scheme1}
- 
-Figure~\ref{fig:scheme1} shows a classical serial code concatenation
-scheme denoted here as \emph{SCC-I}. The encoding process is composed
-of two steps. First, the uncoded frame is divided into $m$ blocks of
-$k_2$ bits denoted $D_2^i$ for $i=1,\ldots,m$ (e.g., $m=3$ in
-Fig.~\ref{fig:scheme1}). Each $D_2^i$ block is encoded by $\C_2$
-generating the codeword $C_2^i$. In the second step, the codewords
-$C_2^i$ are used as the dataword of code $\C_1$ (i.e., $D_1^i=C_2^i$)
-and they are encoded by $\C_1$ generating the codewords $C_1^i$ that
-will be transmitted. In order to eliminate the error floor of $\C_1$,
-$\C_2$ must correct at least $t_2=w_{max}$ bits.
-
-Figure~\ref{fig:scheme3} shows a variation of SCC-I where an
-interleaver is introduced between $\C_1$ and $\C_2$. Based on the
-structure of the error pattern of $\C_1$, it is possible to design a
-proper interleaver to divide each error pattern into several codewords
-of $\C_2$. This way, it is possible to show that not only the
-correction capability required for $\C_2$ can be \emph{relaxed}, but
-also the bandwidth overhead penalty can be reduced. Note that these
-benefits are obtained at the expense of a higher complexity and
-latency required by the interleaver.
-
-\subsection*{SCC Scheme II (SCC-II)} \label{sec:scheme1}
-
-The second classical code concatenation scheme is depicted in
-Fig.~\ref{fig:scheme2}. Compared to the previous scheme, SCC-II uses a
-longer outer code $\C_2$ to protect a frame of $m$ inner datawords
-(e.g., $m=3$ in Fig.~\ref{fig:scheme2}). Let $t_2=\tau\cdot w_{max}$
-be the error correction capability of $\C_2$.  Then, we can conclude
-that the error floor is eliminated with SCC-II if $\tau=m$. On the
-other hand, note that the error floor can be reduced but not
-eliminated if $\tau < m$. This feature of SCC-II can be used to
-provide a good tradeoff between performance and complexity.
-
-
-%-------------------------------------------------------------------------------------------------
-\subsection{Discussion} \label{sec:disadv_serial_schemes}
-
-The overhead of the outer code $\C_2$ given by
-$\Theta_2=(n_2-k_2)/k_2$, is a key factor that defines the
-\emph{goodness} of SCC-I and SCC-II. This OH must be as low as
-possible in order to reduce the SNR penalty of the SCC scheme, which
-is defined as $10\cdot log_{10}(1+\Theta_2)$~dB.
-
-Next we assume that $\C_2$ is a narrow-sense binary BCH
-code~\cite{HP2003,RL2009} with redundancy
-$\Phi(n_2,t_2)=n_2-k_2$. Assuming that $t_2=w_{max}$ (i.e., the error
-floor is eliminated) and $n_2=k_1$ with $k_1$ being the dimension of
-$\C_1$, the overhead of the SCC-I-based solution can be expressed as
-\begin{equation}
-\label{equ:oh1}
-  \Theta ^{(I)} =\Theta_{2}= \frac{\Phi(k_1,w_{max})}{k_1-\Phi(k_1,w_{max})}.
-\end{equation}
-As we shall show later, the SNR penalty of SCC-I may be large as a
-result of a high correction capability required to eliminate the error
-floor of $\C_1$ (i.e., $t_2=w_{max}$). This penalty can be reduced by
-adding an interleaver between $\C_1$ and $\C_2$ (see
-Fig.~\ref{fig:scheme3})~\cite{669119}. The optimum interleaver depends
-strongly on the error patterns of the inner code
-$\C_1$. Unfortunately, this information is not always available for
-most of the graph based codes. Alternatively, suboptimal random
-interleaving can be used in SCC-I. Although the design of this
-suboptimal solution does not require information of the error
-patterns, its application to high speed communication systems may be
-difficult due to the need for very large frame sizes.
-
-Next we evaluate the overhead of SCC-II. The error correction
-capability of $\C_2$ can be expressed as $t_2=\tau \cdot w_{max}$ with
-$\tau < m$. In this case, note that the error floor is reduced but not
-eliminated as in SCC-I. The overhead penalty of SCC-II can be computed
-as follows:
-\begin{equation}
-\label{equ:oh2}
- \Theta^{(I\!I)}(\tau) = \frac{\Phi(m\cdot k_1,\tau \cdot
-   w_{max})}{m\cdot k_1-\Phi(m\cdot k_1,\tau \cdot w_{max})}.
-\end{equation}
-In most practical high-speed applications, the following conditions
-can be verified: $\tau\leq 3$, $w_{max}\leq \frac{1}{2}\sqrt{k_1}\leq
-200$, $m \geq 20$, and $k_1 \geq 500$. Then, based on numerical
-evaluations of \eqref{equ:oh1} and \eqref{equ:oh2}, we have found that
-the ratio $\Theta^{(I\!I)}(\tau)/\Theta^{(I)}$ can be bounded by
-\begin{equation}\label{eq:approx1}
-  \frac{\tau}{m} \leq \frac{\Theta^{(I\!I)}(\tau)}{\Theta^{(I)}} \leq 1.75\cdot \frac{\tau}{m}.
-\end{equation}
-On the other hand, the residual error floor of SCC-II can be
-approximated by
-\begin{equation}\label{equ:errorfloor1}
-  P_b^{(I\!I)}(\Omega) \approx \sum_{i=\tau+1}^m \frac{i\cdot w_{max}}{m\cdot k_1}\binom{m}{i}[P_w(\Omega)]^i[1-P_w(\Omega)]^{m-i}.
-\end{equation}
-Assuming that $P_b^{(I\!I)}(\Omega)$ satisfies the requirement of the
-application (e.g., $P_b^{(I\!I)}(\Omega)<10^{-15}$), and taking into
-account that $\tau \ll m$, from \eqref{eq:approx1} we conclude that
-the overhead of an SCC-II-based FEC solution is lower than that
-required by SCC-I. Unfortunately, the application of SCC-II to future
-multigigabit systems (e.g., \cite{OSKY2010}, \cite{VK2005}) may be
-difficult owing to the high NCG required at very low BER. The latter
-imposes the use of a large block size for the outer code $\C_2$, which
-increases significantly its implementation complexity.
-
-%-------------------------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------------------------
-%-------------------------------------------------------------------------------------------------
-\section{DESARROLLO} \label{sec:proposed_scheme}
-
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_1_encoder.eps}}%
-    \caption{Encoding of the new SCC technique.}
-    \label{fig:pro1enc} 
-\end{figure}
-
-We introduce a novel code concatenation scheme to combat the error
-floor problem experienced in iterated sparse graph-based error
-correcting codes. As we shall show here, the new approach is able to
-achieve an error floor reduction similar to that accomplished by the
-SCC-II. However, our approach builds from short outer block codes as
-in SCC-I, therefore the implementation complexity can be drastically
-reduced.
-
-Next we assume that the error floor of the inner code $\C_1$ is caused
-by a set of detectable error-patterns $\Omega$. Note that this
-assumption is satisfied by LDPC codes. The new SCC approach uses two
-short outer block codes (denoted as $\C_2$ and $\C_3$) to combat the
-error floor of the inner code $\C_1$.  The encoding process comprises
-three steps (see Fig.~\ref{fig:pro1enc}):
-\begin{itemize}
-\item[1.] The uncoded frame is divided into $m$ datawords of $k_3$
-  bits denoted $D^i_3$ for $i=1,\ldots,m$ (e.g., $m=3$ in the example
-  of Fig.~\ref{fig:pro1enc}). Each dataword $D^i_3$ is encoded by
-  $\C_3$ generating the parity bits $P^i_3$.
-\item[2.] The $m$ parity bits $P^i_3$ are grouped together into the
-  dataword $D^1_2$ which is encoded by $\C_2$, generating the parity
-  bits $P^1_2$
-\item[3.] The parity bits $P^1_2$ are divided into $m$ sub-blocks of
-  equal (or almost equal) size denoted as $P^{1,i}_2$ with
-  $i=1,\ldots,m$. Each dataword $D^i_1$ is generated by the
-  concatenation of the dataword $D^i_3$ and the parity bits
-  $P^{1,i}_2$. Finally, each dataword $D^i_1$ is encoded by code
-  $\C_1$ generating the codeword $C^i_1$ to be transmitted over the
-  channel.
+\item{Hardcores} Están optimizados para una tecnología específica y el diseñador que los utiliza no puede modificarlos. Son
+  manifestaciones físicas del diseño del core ya que tienen un layout
+  predefinido incluido en la arquitectura. Son los mejores para
+  aplicaciones plug\&play. Si bien son poco flexibles, portables y
+  configurables, son muy predictibles (timing fijo) y fiables
+  una vez implementados.
 \end{itemize}
 
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_1_decoder.eps}}%
-  \caption{Decoding process of the new SCC.}
-    \label{fig:pro1dec} 
+\subsection{Microprocesadores Soft Core}% \label{sec:errorfloor_model}
+
+Es un microprocesador que puede implementarse utilizando síntesis lógica
+en diferentes dispositivos lógicos programables. Particularmente destacados por su alto nivel de configuración, pudiendo agregar y quitar funcionalidades en base a las 
+necesidades específicas \cite{Etiqueta22} Suelen distribuirse en forma de código fuente en algún lenguaje de descripción de hardware, principalmente VHDL o Verilog, aunque algunos comerciales se distribuyen en formatos propietarios.
+
+El microprocesador como componente discreto o como parte en un mismo 
+chip, es un buen candidato para ser implementado en un FPGA. Esto implica, que el microprocesador se encargue de la ejecución de programas secuenciales y cálculos; mientras que la lógica de la FPGA se encarga de las interfaces, además de facilitar el procesamiento paralelo. En cuanto a performance, varía respecto a cada implementación, dependiendo de las características inherentes a la CPU, como tipos y tamaños de cache, buses, controladores, etc. ~\cite{Etiqueta05}.
+
+	Los principales fabricantes de dispositivos lógicos programables, tienen su propio Soft Core comercial diseñado y optimizado para funcionar en sus FPGAs. También existe una gran variedad de distribuidos en forma de código abierto, como el OpenRISC 1200 \cite{Etiqueta19} mantenido por la comunidad Opencores \cite{Etiqueta20}, o los  SCPs
+	LEON2 y LEON3 \cite{Etiqueta21} \cite{Etiqueta22} que proporciona la compañía Gaisler Research \cite{Etiqueta23}.
+
+
+
+\subsection{Benchmarking}% \label{sec:errorfloor_model}
+
+Es una forma de medir el rendimiento de un sistema o los componentes del mismo. Se obtiene por la acción de ejecutar un programa de computadora o un conjunto de programas. Dicho rendimiento se refiere generalmente al hardware.Sin embargo, hay circunstancias en que la técnica también es aplicable al software
+
+El uso de \textit{benchmark} está motivado por la creciente
+complejidad en los sistemas informáticos, tanto a nivel de hardware
+como de software, lo cual dificulta enormemente su comparación. En
+particular, las especificaciones técnicas del sistema por sí solas no
+permiten predecir el rendimiento del mismo para resolver un problema
+en particular. Es necesario utilizar tests que permitan su
+comparación.
+
+Entre la amplia variedad de \textit{benchmarks} existentes podemos
+diferenciar dos grupos principales. El primer grupo lo conforman los
+\textit{benchmarks} de aplicaciones los cuales se encargan de analizar
+el rendimiento cuando se ejecutan programas de uso cotidiano para el
+usuario. El segundo grupo lo conforman los \textit{benchmarks}
+sintéticos diseñados para imitar una clase particular
+de carga de trabajo en un componente del sistema. Estos últimos son
+más efectivos para probar componentes individuales como discos rígidos
+o dispositivos de red.
+
+La utilización de benchmarking se extiende a los Sistemas Embebidos
+proporcionando datos que permiten la comparación de los mismos. Por
+ejemplo, el Embedded Microprocessor Benchmark Consortium (EEMBC)
+desarrolla una serie de aplicaciones benchmark que facilitan a los
+diseñadores de sistemas la selección de los procesadores óptimos para
+sus desarrollos. EEMBC organiza su conjunto de benchmarks apuntando a
+diferentes ramas de aplicación tales como Automotriz, Sistemas
+Digitales, Java, Procesadores Multicore, Redes, Procesamiento de
+señales, Smartphones/tablets y Browsers.
+	
+En benchmarking de sistema embebidos es común realizar tests que se
+focalicen en el núcleo de la CPU aislándolo de los otros elementos del
+procesador. Es posible, por ejemplo, que desee tener la capacidad de
+hacer caso omiso de la memoria y los efectos de E/S con el fin de
+focalizar el análisis principalmente en la operación de un pipeline.
+
+A continuación se describen dos de los principales benchmarks que se
+utilizaron para evaluar el sistema desarrollado en el trabajo presente
+CoreMark es un Benchmark que pretende medir el desempeño de las CPU
+utilizadas en Sistemas Embebidos. Fue desarrollado en 2009 por Shay
+Gal-On en el EEMBC y se ha convertido en un estándar de la
+industria, llegando a reemplazar al antiguo benchmark
+Dhrystone. CoreMark esta desarrollado en C y contiene implementaciones
+de los siguientes algoritmos:
+	
+\begin{itemize}
+\item Procesamiento de listas (Find and sort)
+\item Manipulación de matrices (Operaciones comunes de matrices)
+\item Máquina de estados 
+\item Códigos de redundancia cíclica (CRC)  
+\end{itemize}	 
+	
+Las plataformas actuales con procesadores embebidos no solo están
+compuestas por un CPU y un subsistema de memoria. De hecho, los SoC
+pueden estar compuestos por más de un núcleo de CPU, aceleradores de
+hardware, periféricos complejos y grandes cantidades de
+memoria. CoreMark es el punto de partida para la evaluación de éstos
+complejos dispositivos. El benchmark es capaz de probar la estructura
+de pipeline básica de un procesador, así como la capacidad de prueba
+de lectura/escritura de operaciones básicas, operaciones de enteros y
+operaciones de control. Respecto de los periféricos y mecanismos de
+interrupción, el EEMBC desarrolla una colección de tests basados en
+escenarios y conducidos por hardware que evalúan dichos periféricos
+y la capacidad del CPU de prestar servicio a los mismos y a otras
+interrupciones a nivel sistema.
+	
+Los resultados del CoreMark pueden verse en la página principal   
+del proyecto \url{http://www.eembc.org/coremark/}
+
+\subsection{Dhrystone}
+
+ 		Es un benchmark sintético y comercial. Intenta medir la velocidad del sistema en cuanto a rendimiento no numérico, expresando los
+		resultados en DPS (instrucciones Dhrystones Por Segundo). El rendimiento de Dhyrstone se calcula a partir de la siguiente fórmula: Iteraciones
+		Dhrystone por segundo = reloj del procesador * número de pasadas / tiempo de ejecución. Para que el resultado sea válido, el código Dhrystone debe
+		ejecutarse al menos por dos segundos. %Es un pequeño benchmark sintético que pretende ser representativo de programación entera de sistemas. 
+		
+		Contiene muchas instrucciones simples, llamadas a procedimiento y condicionales, y pocas de coma flotante y bucles. Usa pocas variables globales y
+		ejecuta operaciones con punteros. Está compuesto por 12 procedimientos incluidos en un bucle de medida con 94 sentencias. No se puede variar su
+		tamaño. Está compuesto por un 53\% de instrucciones de asignación, 32\% de instrucciones de control y un 15\% de llamadas a procedimiento.
+		Dhrystone es compacto (no más de 1,5 KB), ampliamente disponible en el dominio público, y sencillo de ejecutar. Por ser tan pequeño, Dhrystone
+		entra completamente en la caché interna, de esta manera no mide el resto del sistema pero presenta la ventaja de que mide solamente la capacidad
+		del procesador para trabajar con enteros.
+%-------------------------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------------------------
+%-------------------------------------------------------------------------------------------------
+\section{Métodos y Materiales} \label{sec:background}
+
+\subsection{Metodología}
+
+El modelo de desarrollo a utilizar es el \textit{Modelo en Espiral}. Dicho modelo fue tipificado por Ian Sommerville~\cite{Etiqueta00} y originalmente propuesto por Boehm en
+año 1988 en el artículo ``A Spiral Model of Software Development and Enhancement''.
+Las fases metodológicas utilizadas para el desarrollo están representados en la Figura 1: 
+
+\begin{figure}[t] 
+  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/espiral_paper}}%
+    \caption{Ciclo de vida de los prototipos}
+    \label{fig:pro3enc} 
 \end{figure}
 
-Figure~\ref{fig:pro1dec} presents an example of the decoding process
-when the error pattern occurs in the third codeword, $C_1^3$. The
-process comprises the following steps:
-\begin{itemize}
-\item[1.] Codewords $C^i_1$ for $i=1,\ldots,m$ are decoded and those
-  containing uncorrectable errors are detected.
-\item[2.] From the error-free datawords $D_1^i$ obtained at Step~1,
-  the datawords $D_3^i$ are extracted and encoded in order to recover
-  the parity bits $P_3^i$.
-\item[3.] The dataword $D^1_2$ is reconstructed from the parity bits
-  $P_3^i$ generated at Step~2, while the unavailable parity bits
-  (those that belong to the corrupted codewords) are marked as
-  erasures (i.e., $P^3_3$ in the example of
-  Fig.~\ref{fig:pro1dec}). The parity bits $P^1_2$ are extracted from
-  the error-free datawords $D^i_1$ and those bits related to the
-  corrupted datawords are marked as erasures. An erasure decoding is
-  carried out over the codeword $C^1_2$, where the parity bits $P^i_3$
-  of the corrupted codewords $C^i_3$ are regenerated.
-\item[4.] Finally, the codewords $C^i_3$ with residual errors are
-  decoded.
-\end{itemize}
+
+Como primer paso se analizarán las diferentes
+alternativas disponibles en el mercado y en comunidades de hardware de
+código abierto para la implementación de microprocesadores diseñados
+en lenguaje de descripción de hardware. Como segundo paso 
+se analizarán y seleccionarán los componentes \footnote{Entiéndase como ``componente'' a microprocesadores softcore, SoC, placa de desarrollo.} por medio de un análisis comparativo que permitirá evidenciar las características relevantes de
+cada uno de ellos. Como último paso debido a que se adoptara un modelo de desarrollo en espiral se plantearán una serie de prototipos que incluirán mayor funcionalidad en cada iteración del modelo.
+
+\subsection{Recursos Utilizados}
+
+La implementación del sistema se llevó a cabo sobre la placa de
+desarrollo de Xilinx S3ADSP1800A, basada en hardware reconfigurable disponible en
+el Centro Universitario de Automatización y Robótica (CUDAR) de la
+Universidad Tecnológica Nacional (UTN) de Córdoba. Sin embargo, cabe
+destacar que el sistema propuesto puede ser implementado cualquier
+otra FPGA que disponga de los recursos mínimos necesarios.
 
 %-------------------------------------------------------------------------------------------------
-\subsection{Overhead of the New SCC Scheme} \label{sec:performance_proposed_scheme}
+\section{Desarrollo} %\label{sec:proposed_scheme}
+Como primera acción se analizó la factibilidad de implementación de un SoC con licencia OpenSource en FPGA.
+\subsection{Requerimientos de Usuario}% \label{sec:numerical_results}
+\begin{itemize}
+\item Se debe implementar un Microprocesador Softcore de núcleo simple.
+\item El SoC seleccionado debe poseer la menor cantidad de restricciones respecto de su implementación en placas de desarrollo de diversos fabricantes.
+\item Todo el codigo RTL implementado, las herramientas de desarrollo utilizadas para el diseño de software y los sistemas operativos debe tener licencia LGPL o GPL.
+\item
+\end{itemize}
 
-The proposed SCC achieves similar performance than the one obtained by
-SCC-II provided that $\C_3$ corrects $w_{max}$ bits and $\C_2$
-recovers $\tau\cdot(n_3-k_3) + \frac{\tau}{m}(n_2-k_2)$ erased
-bits. Note that $\tau\cdot(n_3-k_3)$ are the parity bits of $\tau$
-codewords of $\C_3$, while $\frac{\tau}{m}(n_2-k_2)$ are the parity
-bits of $\C_2$ that belong to $\tau$ corrupted codewords of
-$\C_1$. Assuming that $\C_2$ is a \textit{maximum distance separable}
-(MDS) code (e.g., RS codes), it is verified that its erasure
-correction capability is equal to its redundancy~\cite{HP2003},
-therefore
-\begin{equation}
-  n_2-k_2=\tau\cdot(n_3-k_3) + \frac{\tau}{m}(n_2-k_2),
-\end{equation}
-then,
-%$n_2-k_2=\tau\cdot(n_3-k_3) + \frac{\tau}{m}(n_2-k_2)$ which resolved
-%for $n_2-k_2$ gives
-\begin{equation}
-  n_2-k_2 = \frac{m\cdot \tau}{m-\tau}\cdot(n_3-k_3)
-\end{equation}
-Finally, the overhead of the new SCC is
-\begin{equation}
-  \Theta^{(I\!I\!I)}(\tau) = \frac{n_2-k_2}{m\cdot k_3} = \frac{\tau}{m-\tau}\left[\frac{n_3-k_3}{k_3}\right]
-\end{equation}
-Assuming that the dimension of the inner code $\C_1$ is $k_1>500$, we
-have verified numerically that the condition 
-\begin{equation}\label{eq:approx2}
- \Theta^{(I\!I\!I)}(\tau) < \Theta^{(I\!I)}(\tau)
-\end{equation}
-is satisfied in most practical high-speed applications\footnote{In
-  these cases, $\tau\leq 3$, $w_{max}\leq \frac{1}{2}\sqrt{k_1} \leq
-  200$, and $ m \ge 20$.}.  From \eqref{eq:approx2} note that the
-proposed SCC performs better than the classical SCC-II. Moreover, we
-realize that the implementation complexity is lower than in SCC-II. In
-particular, note that the new approach builds from two \emph{short}
-block size outer codes ($\C_2$ and $\C_3$). Furthermore, notice that
-$\C_2$ requires only one decoding process per frame. Therefore, the
-complexity of the new SCC is slightly higher than that required by the
-SCC-I \emph{without interleaving}. From the above, we can conclude
-that the new SCC scheme offers a better tradeoff between performance
-and complexity than previous SCC proposals.
+\begin{figure}[t] 
+  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/proto1}}%
+    \caption{Ciclo de vida de los prototipos}
+    \label{fig:pro3enc} 
+\end{figure}
+
+\begin{figure}[t] 
+  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/proto2}}%
+    \caption{Ciclo de vida de los prototipos}
+    \label{fig:pro3enc} 
+\end{figure}
+
+\begin{figure}[t] 
+  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/ecos}}%
+    \caption{Ciclo de vida de los prototipos}
+    \label{fig:pro3enc} 
+\end{figure}
+
+\begin{figure}[t] 
+  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/proto4}}%
+    \caption{Ciclo de vida de los prototipos}
+    \label{fig:pro3enc} 
+\end{figure}
 
 %-------------------------------------------------------------------------------------------------
-\subsection{Example 1} \label{sec:numerical_results}
-
-\begin{table*}[t]
-\caption{\label{tab:examples} Performance and complexity comparison of Example~1.}
-  \begin{center}
-    \begin{tabular}{|c|c|r|c|l|c|c|c|} %\cline{2-4} \multicolumn{1}{c|}{}
-      \multicolumn{1}{c}{Scheme}& 
-      \multicolumn{1}{c}{SNR Penalty}&
-      \multicolumn{1}{c}{Overhead}&
-      \multicolumn{1}{c}{Error Floor}&
-      \multicolumn{1}{c}{Outer Code $\C_2$}&
-      \multicolumn{1}{c}{Outer Code $\C_3$}& 
-      \multicolumn{1}{c}{Performance}&
-      \multicolumn{1}{c}{Complexity}\\ 
-      \hline 
-      SCC-I       & 0.3386 dB   &  8.1081 \%       & None                      & BCH$[1320,1221,19]$    & None                    & Bad   & Good   \\
-      \hline 
-      SCC-II       & 0.0397 dB   &  0.9174 \%       & $\approx 5\cdot 10^{-19}$  & BCH$[47520,47088,55]$  & None     
-      & Good  & Bad    \\
-      \hline 
-      This work         & 0.0297 dB   &  0.6865 \%       & $\approx 5\cdot 10^{-19}$  & RS$[432,396,37]$       & BCH$[1410,1311,19]$  & Good  & Good   \\
-      \hline 
-    \end{tabular}
-    \vspace{-5mm}
-  \end{center}
-\end{table*}
-
-Let $\C_1$ be the Margulis $[2640,1320]$ LDPC
-code~\cite{MacKay03}. This code has an error floor starting at
-$P_w(\Omega)\approx 10^{-5}$. This error floor is caused by
-\textit{trapping-sets} (TS), in particular (12,4) TS and (14,4)
-TS\footnote{In the notation ``($e,d$) TS'', $e$ is the number of wrong
-  bits and $d$ is the number of unsatisfied check nodes (see
-  \cite{MacKay03,4601062} for more details)} which have 6 and 7
-systematic bits, respectively. However, as noticed in~\cite{4601062},
-there are also trapping sets of weight 15, 16, 17 and 18 bits. We take
-into account these additional trapping sets by designing an SCC scheme
-to correct error patterns with $w_{max}=9$ systematic bits. The
-solutions for the different SCC schemes are described in the
-following.
-\begin{itemize}
-\item SCC-I: the outer code $\C_2$ must be the
-  BCH$[1320,1221,19]$. Therefore, the SNR penalty and bandwidth
-  overhead are $10\cdot log_{10}(1320/1221)=0.3386$~dB and
-  $(1320-1221)/1221= 8.11\%$, respectively.
-\item SCC-II: the outer code $\C_2$ must be a binary
-  BCH$[47520,47088,55]$ code, which corrects up to $\tau=3$
-  error-patterns of $9$ bits. The error floor is not entirely
-  eliminated, but it is reduced to $P_b^{(I\!I)}(\Omega)\approx 5\cdot
-  10^{-19}$ with an SNR penalty and bandwidth overhead of $0.0397$~dB
-  and $0.9174\%$, respectively.
-\item New SCC: setting $m=36$ and $\tau=3$ as in SCC-II (this way, the
-  same residual error floor is achieved), $\C_3$ can be a
-  BCH$[1410,1311,19]$ over GF$(2^{11})$, and $\C_2$ can be an
-  RS$[432,396,37]$ over GF($2^{9}$). The number of additional parity
-  bits is $36\cdot 9=324$. This OH introduces an SNR penalty and a
-  bandwidth overhead of $0.0297$~dB and $0.6865\%$, respectively.
-\end{itemize}
- 
-Table~\ref{tab:examples} presents a comparison of the different SCC
-solutions. Note that
-\begin{itemize}
-\item the performance of SCC-II is better than that of SCC-I at the
-  expense of a higher implementation complexity (due to the longer
-  outer BCH code);
-\item the new approach achieves better performance than SCC-II with a
-  complexity similar to that of SCC-I\footnote{In particular, note
-    that the outer BCH code of the new SCC and the outer BCH code of
-    SCC-I belong to the same primitive BCH code over GF($2^{11}$)
-    (they have practically the same complexity). Also notice that the
-    second outer RS code of the new SCC is simple and requires only
-    one decoding process per frame.}.
-%\footnote{Also note that since only $\binom{m}{\tau}$
-%    different erasure patterns have to be corrected by $\C_2$, its
-%    decoder could be optimized to lower complexity}.
-\end{itemize}
+\subsection{Análisis de Riesgo} %\label{sec:performance_proposed_scheme}
 
 
-\subsection{Example 2} 
-We use the proposed SCC to improve the performance of the LDPC+RS
-concatenation scheme designed for next generation optical
-communication systems \cite{4528592}. This scheme comprises an inner
-LDPC$[9252,7967]$ code and an outer RS$[992,956,37]$ code. The total
-overhead is $20.5\%$ and the NCG at BER=$10^{-15}$ is $10$~dB. The
-outer RS code introduces an SNR penalty of $0.1605$~dB.
 
-Next we use the new SCC approach with the same inner LDPC code
-$\C_1$. For the outer codes, we consider the RS$[833,797,37]$ as
-$\C_3$ (a shortened version of the original RS code), and the
-RS$[1014,936,79]$ code as $\C_2$ where $m=26$ and $\tau=2$.  From
-\cite{4528592}, the error pattern probability is $P_w(\Omega)\approx
-5\cdot 10^{-7}$. Then, the residual error floor is
-$P_b^{(I\!I\!I)}(\Omega)\approx 10^{-19}$. The SNR penalty and
-bandwidth overhead are $0.0164$~dB and $0.378\%$
-respectively. Finally, we get NCG$=10.1441$~dB (vs. $10$~dB) with a
-total overhead of $16.568\%$ (vs. $20.5\%$).
+%-------------------------------------------------------------------------------------------------
+%\subsection{Example 1} \label{sec:numerical_results}
+%
+%\begin{table*}[t]
+%\caption{\label{tab:examples} Performance and complexity comparison of Example~1.}
+%  \begin{center}
+%    \begin{tabular}{|c|c|r|c|l|c|c|c|} %\cline{2-4} \multicolumn{1}{c|}{}
+%      \multicolumn{1}{c}{Scheme}& 
+%      \multicolumn{1}{c}{SNR Penalty}&
+%      \multicolumn{1}{c}{Overhead}&
+%      \multicolumn{1}{c}{Error Floor}&
+%      \multicolumn{1}{c}{Outer Code $\C_2$}&
+%      \multicolumn{1}{c}{Outer Code $\C_3$}& 
+%      \multicolumn{1}{c}{Performance}&
+%      \multicolumn{1}{c}{Complexity}\\ 
+%      \hline 
+%      SCC-I       & 0.3386 dB   &  8.1081 \%       & None                      & BCH$[1320,1221,19]$    & None                    & Bad   & Good   \\
+%      \hline 
+%      SCC-II       & 0.0397 dB   &  0.9174 \%       & $\approx 5\cdot 10^{-19}$  & BCH$[47520,47088,55]$  & None     
+%      & Good  & Bad    \\
+%      \hline 
+%      This work         & 0.0297 dB   &  0.6865 \%       & $\approx 5\cdot 10^{-19}$  & RS$[432,396,37]$       & BCH$[1410,1311,19]$  & Good  & Good   \\
+%      \hline 
+%    \end{tabular}
+%    \vspace{-5mm}
+%  \end{center}
+%\end{table*}
+%
+%\begin{itemize}
+%\item SCC-I: the outer code $\C_2$ must be the
+%  BCH$[1320,1221,19]$. Therefore, the SNR penalty and bandwidth
+%  overhead are $10\cdot log_{10}(1320/1221)=0.3386$~dB and
+%  $(1320-1221)/1221= 8.11\%$, respectively.
+%\item SCC-II: the outer code $\C_2$ must be a binary
+%  BCH$[47520,47088,55]$ code, which corrects up to $\tau=3$
+%  error-patterns of $9$ bits. The error floor is not entirely
+%  eliminated, but it is reduced to $P_b^{(I\!I)}(\Omega)\approx 5\cdot
+%  10^{-19}$ with an SNR penalty and bandwidth overhead of $0.0397$~dB
+%  and $0.9174\%$, respectively.
+%\item New SCC: setting $m=36$ and $\tau=3$ as in SCC-II (this way, the
+%  same residual error floor is achieved), $\C_3$ can be a
+%  BCH$[1410,1311,19]$ over GF$(2^{11})$, and $\C_2$ can be an
+%  RS$[432,396,37]$ over GF($2^{9}$). The number of additional parity
+%  bits is $36\cdot 9=324$. This OH introduces an SNR penalty and a
+%  bandwidth overhead of $0.0297$~dB and $0.6865\%$, respectively.
+%\end{itemize}
+% 
+%Table~\ref{tab:examples} presents a comparison of the different SCC
+%solutions. Note that
+%\begin{itemize}
+%\item the performance of SCC-II is better than that of SCC-I at the
+%  expense of a higher implementation complexity (due to the longer
+%  outer BCH code);
+%\item the new approach achieves better performance than SCC-II with a
+%  complexity similar to that of SCC-I\footnote{In particular, note
+%    that the outer BCH code of the new SCC and the outer BCH code of
+%    SCC-I belong to the same primitive BCH code over GF($2^{11}$)
+%    (they have practically the same complexity). Also notice that the
+%    second outer RS code of the new SCC is simple and requires only
+%    one decoding process per frame.}.
+%%\footnote{Also note that since only $\binom{m}{\tau}$
+%%    different erasure patterns have to be corrected by $\C_2$, its
+%%    decoder could be optimized to lower complexity}.
+%\end{itemize}
+%
+%
+%\subsection{Example 2} 
+%We use the proposed SCC to improve the performance of the LDPC+RS
+%concatenation scheme designed for next generation optical
+%communication systems \cite{4528592}. This scheme comprises an inner
+%LDPC$[9252,7967]$ code and an outer RS$[992,956,37]$ code. The total
+%overhead is $20.5\%$ and the NCG at BER=$10^{-15}$ is $10$~dB. The
+%outer RS code introduces an SNR penalty of $0.1605$~dB.
+%
+%Next we use the new SCC approach with the same inner LDPC code
+%$\C_1$. For the outer codes, we consider the RS$[833,797,37]$ as
+%$\C_3$ (a shortened version of the original RS code), and the
+%RS$[1014,936,79]$ code as $\C_2$ where $m=26$ and $\tau=2$.  From
+%\cite{4528592}, the error pattern probability is $P_w(\Omega)\approx
+%5\cdot 10^{-7}$. Then, the residual error floor is
+%$P_b^{(I\!I\!I)}(\Omega)\approx 10^{-19}$. The SNR penalty and
+%bandwidth overhead are $0.0164$~dB and $0.378\%$
+%respectively. Finally, we get NCG$=10.1441$~dB (vs. $10$~dB) with a
+%total overhead of $16.568\%$ (vs. $20.5\%$).
 
 
 %-------------------------------------------------------------------------------------------------
@@ -997,45 +926,52 @@ total overhead of $16.568\%$ (vs. $20.5\%$).
 %-------------------------------------------------------------------------------------------------
 \section{MEDICIONES} \label{sec:improvements}
 
-We introduce two improvements of the new SCC suitable for many
-practical applications based on LDPC codes and TCs. The first one is
-an optimization for $\tau=1$ motivated by the fact that most LDPC
-codes have a low error floor (BER$<10^{-10}$) that can be reduced
-below $10^{-15}$ by correcting only one error pattern per frame (i.e.,
-$\tau=1$). The second approach is a generalization of the SCC
-technique designed to reduce the error floor caused by low-weight
-codewords (i.e., undetectable error patterns). This is particularly
-useful to lower the error floor of TC such as TPC.
-
-\subsection{New SCC with $\tau=1$} \label{sec:improvement_1}
-
-When $\tau=1$ it is possible to lower the overhead penalty,
-implementation complexity, and encoder latency by using ${(n_3-k_3)}$
-\textit{single parity check} (SPC) codes as the outer code $\C_2$. The
-new encoding process, as depicted in Fig.~\ref{fig:pro2enc}, comprises
-the following steps:
-\begin{itemize}
-\item[1.] The uncoded frame is divided into $m$ blocks. The first
-  $m-1$ datawords $D^i_3$ for $i=1,\ldots,m-1$ correspond to the first
-  $m-1$ blocks. The last dataword $D^m_3$ is the concatenation of
-  $(n_3-k_3)$ zeros and the last block $\widetilde{D}^m_3$ of
-  $k_3-(n_3-k_3)$ bits.
-\item[2.] Each dataword $D^i_3$ is encoded by $\C_3$ generating the
-  parity bits $P^i_3$.
-\item[3.] For $i=1,\ldots,n_3-k_3$ the $m$-bit dataword $D^i_2$ is the
-  concatenation of the $i$-th parity bit of $P^j_3$ for
-  $j=1,\ldots,m$. Each $D^i_2$ is encoded by an SPC code.
-\item[4.] The dataword for $\C_1$ is $D^i_1=D^i_3$ for
-  $i=1,\ldots,m-1$. The last dataword $D^m_1$ is the concatenation of
-  $\widetilde{D}^m_3$ and the $n_3-k_3$ parity bits generated in
-  Step~3. Finally, each dataword $D^i_1$ is encoded by $\C_1$.
-\end{itemize}
-
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_2_encoder.eps}}%
-  \caption{Encoding process of the new SCC optimized for $\tau=1$.}
-    \label{fig:pro2enc}
+\begin{figure}[t] 
+  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/calculomatriz}}%
+    \caption{Ciclo de vida de los prototipos}
+    \label{fig:pro3enc} 
 \end{figure}
+
+
+%We introduce two improvements of the new SCC suitable for many
+%practical applications based on LDPC codes and TCs. The first one is
+%an optimization for $\tau=1$ motivated by the fact that most LDPC
+%codes have a low error floor (BER$<10^{-10}$) that can be reduced
+%below $10^{-15}$ by correcting only one error pattern per frame (i.e.,
+%$\tau=1$). The second approach is a generalization of the SCC
+%technique designed to reduce the error floor caused by low-weight
+%codewords (i.e., undetectable error patterns). This is particularly
+%useful to lower the error floor of TC such as TPC.
+%
+%\subsection{New SCC with $\tau=1$} \label{sec:improvement_1}
+%
+%When $\tau=1$ it is possible to lower the overhead penalty,
+%implementation complexity, and encoder latency by using ${(n_3-k_3)}$
+%\textit{single parity check} (SPC) codes as the outer code $\C_2$. The
+%new encoding process, as depicted in Fig.~\ref{fig:pro2enc}, comprises
+%the following steps:
+%\begin{itemize}
+%\item[1.] The uncoded frame is divided into $m$ blocks. The first
+%  $m-1$ datawords $D^i_3$ for $i=1,\ldots,m-1$ correspond to the first
+%  $m-1$ blocks. The last dataword $D^m_3$ is the concatenation of
+%  $(n_3-k_3)$ zeros and the last block $\widetilde{D}^m_3$ of
+%  $k_3-(n_3-k_3)$ bits.
+%\item[2.] Each dataword $D^i_3$ is encoded by $\C_3$ generating the
+%  parity bits $P^i_3$.
+%\item[3.] For $i=1,\ldots,n_3-k_3$ the $m$-bit dataword $D^i_2$ is the
+%  concatenation of the $i$-th parity bit of $P^j_3$ for
+%  $j=1,\ldots,m$. Each $D^i_2$ is encoded by an SPC code.
+%\item[4.] The dataword for $\C_1$ is $D^i_1=D^i_3$ for
+%  $i=1,\ldots,m-1$. The last dataword $D^m_1$ is the concatenation of
+%  $\widetilde{D}^m_3$ and the $n_3-k_3$ parity bits generated in
+%  Step~3. Finally, each dataword $D^i_1$ is encoded by $\C_1$.
+%\end{itemize}
+%
+%\begin{figure}[t]
+%  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_2_encoder.eps}}%
+%  \caption{Encoding process of the new SCC optimized for $\tau=1$.}
+%    \label{fig:pro2enc}
+%\end{figure}
 
 % \begin{figure}[t]
 %   \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_2_decoder.eps}}%
@@ -1045,93 +981,93 @@ the following steps:
 
 % Figure~\ref{fig:pro2dec} shows an example for the particular
 % case in which the error pattern takes place in the codeword $C_1^3$. 
-
-The decoding process is similar to that of the original scheme (e.g.,
-see Fig.~\ref{fig:pro1dec}). The main benefits of this optimized
-scheme are:
-\begin{itemize}
-\item The implementation complexity of the encoder and decoder of the
-  outer code $\C_2$ is very low since they can be implemented with
-  $n_3-k_3$ XOR gates of $m$ input bits.
-\item It is possible to show that the overhead penalty is reduced to
-  $\Theta^{(I\!I\!I)}(1) =
-  \frac{1}{m}\left[\frac{n_3-k_3}{k_3}\right]$ because the corrupted
-  parity-bits of $\C_2$ do not have to be erased.
-\item The latency is reduced because the $P_2^i$ parity bits are
-  transmitted in the last codeword of $\C_1$ (i.e., the parity bits
-  can be computed while the codewords of $\C_1$ are being transmitted).
-\end{itemize}
-
-\begin{figure}[t]
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/BER_vs_SNR_Margulis_with_Scheme1.eps}}%
-  \caption{BER vs SNR for SCC-II and the new SCC with $\tau=1$.}
-    \label{fig:sim1}
-\end{figure}
-
-The performance of the improved SCC approach with $m=10$ is verified
-by using computer simulations in Fig.~\ref{fig:sim1}. The Margulis
-$[2640,1320]$ code is used as inner code, $\C_1$. Owing to time
-constraints, an artificial high error floor with probability
-$P_w(\Omega)=10^{-3}$ is inserted after the decoding
-process. Similarly to the \emph{real} error floor, the artifical BER
-is generated from error patterns with 7 information bits and 7 parity
-bits. Figure~\ref{fig:sim1} shows the BER of the inner code $\C_1$
-(circles), SCC-II (squares) and the proposed SCC (triangles). For
-SCC-II, the outer code $\C_2$ is a BCH$[13200,13102,15]$. On the other
-hand, $\C_3$ is a BCH$[1397,1320,15]$ while $\C_2$ is an
-SPC$[11,10,2]$ code for the new SCC. From Fig.~\ref{fig:sim1} note
-that $\C_1$ has an error floor at
-BER~$\approx\frac{7}{1320}P_w(\Omega) = 5.3\cdot 10^{-6}$. This error
-floor is reduced by the outer codes to BER~$\approx 4.73\cdot
-10^{-8}$. From this figure we see that the new SCC is able to achieve
-a similar performance than SCC-II. It is important to realize that our
-technique achieves this performance by using short outer block
-codes. Compared with SCC-II, this fact reduces significantly the
-implementation complexity in integrated circuits.
- 
-%-------------------------------------------------------------------------------------------------
-\subsection{Generalization to Correct Low-Weight Codewords} \label{sec:proposed_scheme2}
-
-The proposed SCC strategy can be generalized to reduce also the error
-floor due to low-weight codewords (i.e. undetectable error patterns),
-which is particularly useful for turbo codes. Figure~\ref{fig:pro3enc}
-shows the encoding process of the generalized SCC. Unlike the previous
-case, a subset of the parity bits $P^i_3$ of $\C_3$, denoted as
-$\hat{P}^i_3$, is not encoded by $\C_2$. Instead, this subset is
-transmitted as a part of the dataword $D^i_1$ of the inner code
-$\C_1$. In the decoding process, $\hat{P}^i_3$ is used to detect the
-corrupted $\C_1$-codewords. The decoding process starts by applying
-the decoder of code $\C_1$ to the $m$ received codewords
-$C_1^i$. After that, the dataword $D_1^i$ is extracted from
-$C_1^i$. For each dataword $D^i_1$, the dataword $D^i_3$ is extracted
-and \textit{partially} encoded with $\C_3$ in order to regenerate only
-the parity bits $\hat{P}^i_3$. If these regenerated parity bits are
-not equal to the corresponding bits in $D^i_1$, this dataword is
-marked as corrupted. Once all corrupted datawords $D^i_1$ are
-identified, the rest of the decoding process continues as in the
-original SCC.
-
-\begin{figure}[t] 
-  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_3_encoder.eps}}%
-    \caption{Encoding process of the generalized SCC.}
-    \label{fig:pro3enc} 
-\end{figure}
+%
+%The decoding process is similar to that of the original scheme (e.g.,
+%see Fig.~\ref{fig:pro1dec}). The main benefits of this optimized
+%scheme are:
+%\begin{itemize}
+%\item The implementation complexity of the encoder and decoder of the
+%  outer code $\C_2$ is very low since they can be implemented with
+%  $n_3-k_3$ XOR gates of $m$ input bits.
+%\item It is possible to show that the overhead penalty is reduced to
+%  $\Theta^{(I\!I\!I)}(1) =
+%  \frac{1}{m}\left[\frac{n_3-k_3}{k_3}\right]$ because the corrupted
+%  parity-bits of $\C_2$ do not have to be erased.
+%\item The latency is reduced because the $P_2^i$ parity bits are
+%  transmitted in the last codeword of $\C_1$ (i.e., the parity bits
+%  can be computed while the codewords of $\C_1$ are being transmitted).
+%\end{itemize}
+%
+%\begin{figure}[t]
+%  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/BER_vs_SNR_Margulis_with_Scheme1.eps}}%
+%  \caption{BER vs SNR for SCC-II and the new SCC with $\tau=1$.}
+%    \label{fig:sim1}
+%\end{figure}
+%
+%The performance of the improved SCC approach with $m=10$ is verified
+%by using computer simulations in Fig.~\ref{fig:sim1}. The Margulis
+%$[2640,1320]$ code is used as inner code, $\C_1$. Owing to time
+%constraints, an artificial high error floor with probability
+%$P_w(\Omega)=10^{-3}$ is inserted after the decoding
+%process. Similarly to the \emph{real} error floor, the artifical BER
+%is generated from error patterns with 7 information bits and 7 parity
+%bits. Figure~\ref{fig:sim1} shows the BER of the inner code $\C_1$
+%(circles), SCC-II (squares) and the proposed SCC (triangles). For
+%SCC-II, the outer code $\C_2$ is a BCH$[13200,13102,15]$. On the other
+%hand, $\C_3$ is a BCH$[1397,1320,15]$ while $\C_2$ is an
+%SPC$[11,10,2]$ code for the new SCC. From Fig.~\ref{fig:sim1} note
+%that $\C_1$ has an error floor at
+%BER~$\approx\frac{7}{1320}P_w(\Omega) = 5.3\cdot 10^{-6}$. This error
+%floor is reduced by the outer codes to BER~$\approx 4.73\cdot
+%10^{-8}$. From this figure we see that the new SCC is able to achieve
+%a similar performance than SCC-II. It is important to realize that our
+%technique achieves this performance by using short outer block
+%codes. Compared with SCC-II, this fact reduces significantly the
+%implementation complexity in integrated circuits.
+% 
+%%-------------------------------------------------------------------------------------------------
+%\subsection{Generalization to Correct Low-Weight Codewords} \label{sec:proposed_scheme2}
+%
+%The proposed SCC strategy can be generalized to reduce also the error
+%floor due to low-weight codewords (i.e. undetectable error patterns),
+%which is particularly useful for turbo codes. Figure~\ref{fig:pro3enc}
+%shows the encoding process of the generalized SCC. Unlike the previous
+%case, a subset of the parity bits $P^i_3$ of $\C_3$, denoted as
+%$\hat{P}^i_3$, is not encoded by $\C_2$. Instead, this subset is
+%transmitted as a part of the dataword $D^i_1$ of the inner code
+%$\C_1$. In the decoding process, $\hat{P}^i_3$ is used to detect the
+%corrupted $\C_1$-codewords. The decoding process starts by applying
+%the decoder of code $\C_1$ to the $m$ received codewords
+%$C_1^i$. After that, the dataword $D_1^i$ is extracted from
+%$C_1^i$. For each dataword $D^i_1$, the dataword $D^i_3$ is extracted
+%and \textit{partially} encoded with $\C_3$ in order to regenerate only
+%the parity bits $\hat{P}^i_3$. If these regenerated parity bits are
+%not equal to the corresponding bits in $D^i_1$, this dataword is
+%marked as corrupted. Once all corrupted datawords $D^i_1$ are
+%identified, the rest of the decoding process continues as in the
+%original SCC.
+%
+%\begin{figure}[t] 
+%  \centerline{\includegraphics[width=\ScaleA\columnwidth]{figures_sources/drawing_v10_proposed_3_encoder.eps}}%
+%    \caption{Encoding process of the generalized SCC.}
+%    \label{fig:pro3enc} 
+%\end{figure}
 
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
 %-------------------------------------------------------------------------------------------------
 \section{CONCLUSIÓN} \label{sec:concl} 
 
-We have introduced a novel SCC scheme to combat the error floor
-problem experienced in iterated sparse graph-based error correcting
-codes. This SCC scheme is built upon two short outer codes combined
-with a novel encoding/decoding strategy. We have shown that the new
-approach reduces significantly the complexity with negligible
-penalty. The proposed SCC can be efficiently used to combat the error
-floor experienced in both LDPC and TP codes. In particular, the new
-SCC approach can be used to improve the performance in high-speed
-optical communications, where high coding gain and very low BER are
-required.
+%We have introduced a novel SCC scheme to combat the error floor
+%problem experienced in iterated sparse graph-based error correcting
+%codes. This SCC scheme is built upon two short outer codes combined
+%with a novel encoding/decoding strategy. We have shown that the new
+%approach reduces significantly the complexity with negligible
+%penalty. The proposed SCC can be efficiently used to combat the error
+%floor experienced in both LDPC and TP codes. In particular, the new
+%SCC approach can be used to improve the performance in high-speed
+%optical communications, where high coding gain and very low BER are
+%required.
 
 
 
